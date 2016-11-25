@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="@dimen/dimTotalW"
+	android:layout_height="@dimen/dimTotalH"
+	android:id="@+id/All">
+	<RelativeLayout
+		android:layout_height="wrap_content"
+		android:layout_width="wrap_content"
+		android:id="@+id/Pallette"
+		android:orientation="horizontal"
+		android:padding="@dimen/dimSpacer"
+		>
+		<com.threecats.colorselect.HueView
+			android:background="#aaf"
+			android:id="@+id/Hue"
+			android:layout_width="@dimen/dimStrip"
+			android:layout_height="@dimen/dimSquare"
+			android:layout_margin="@dimen/dimSpacer"
+			/>
+		<com.threecats.colorselect.SaturationValueView
+			android:layout_height="@dimen/dimSquare"
+			android:layout_width="@dimen/dimSquare"
+			android:background="#faa"
+			android:id="@+id/SatVal"
+			android:layout_toRightOf="@+id/Hue"
+			android:layout_margin="@dimen/dimSpacer"
+			/>
+	    <ImageView
+    		android:layout_height="@dimen/dimPreview"
+    		android:layout_width="@dimen/dimStrip"
+			android:layout_toRightOf="@+id/SatVal"
+	    	android:background="#aff"
+	    	android:id="@+id/OldColor"
+	    	android:layout_margin="@dimen/dimSpacer"
+	    />
+	    <ImageView
+	    	android:layout_height="@dimen/dimPreview"
+	    	android:layout_width="@dimen/dimStrip"
+			android:layout_toRightOf="@+id/SatVal"
+	    	android:background="#ffa"
+	    	android:id="@+id/NewColor"
+	    	android:layout_below="@+id/OldColor"
+	    	android:layout_margin="@dimen/dimSpacer"
+	    />
+		<ImageView
+			android:layout_height="@dimen/dimCursor"
+			android:layout_width="@dimen/dimCursor"
+			android:src="@drawable/satvalcursor"
+			android:id="@+id/SatValCursor"
+			android:scaleType="matrix"
+			android:layout_alignLeft="@+id/SatVal"
+			android:layout_alignTop="@+id/SatVal"
+		/>
+		<ImageView
+			android:layout_height="@dimen/dimCursor"
+			android:layout_width="@dimen/dimStrip"
+			android:src="@drawable/huecursor"
+			android:id="@+id/HueCursor"
+			android:scaleType="matrix"
+			android:layout_alignLeft="@+id/Hue"
+			android:layout_alignTop="@+id/Hue"
+		/>
+</RelativeLayout>
+<TextView
+android:id="@+id/Debug" android:layout_width="wrap_content" android:layout_height="wrap_content" android:shadowDx="1" android:shadowDy="1" android:shadowRadius="1" android:shadowColor="#ff000000"/>
+</FrameLayout>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="dimStrip">60dp</dimen>
+    <dimen name="dimCursor">18dp</dimen>
+    <dimen name="dimSpacer">10dp</dimen>
+    <dimen name="dimSquare">320dp</dimen>
+    <dimen name="dimPreview">190dp</dimen>
+    <dimen name="dimTotalH">440dp</dimen>
+    <dimen name="dimTotalW">440dp</dimen>
+</resources>
