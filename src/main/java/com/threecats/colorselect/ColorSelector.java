@@ -10,54 +10,57 @@ package com.threecats.colorselect;
  *  see NOTICE and LICENSE files in the top level project folder.
  */
 
-import android.app.Dialog;
-import android.content.Context;
 import android.graphics.Color;
-import android.view.Display;
+import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.support.v4.app.DialogFragment;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.Window;
-import android.view.WindowManager;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
 import android.widget.ImageView;
-import android.util.Log;
+import android.widget.RelativeLayout;
 
-public class ColorSelectDialog extends Dialog {
-	
-	public interface OnColorSelectListener {
+public class ColorSelector extends DialogFragment {
+
+    private static final String ARG_COLOR = "arg_color";
+
+    public interface ColorSelectedListener {
 		void onNewColor(int color);
 	}
-	
-	private OnColorSelectListener onColorSelectListener;
 
-	final View view;
-	final SaturationValueView viewSatVal;
-	final HueView viewHue;
-	final TextView viewDebug;
-	final ImageView viewHueCursor;
-	final ImageView viewSatValCursor;
-	final ImageView viewOldColor;
-	final ImageView viewNewColor;
+    public ColorSelector() {}
+
+	public static ColorSelector newInstance(int startColor) {
+        ColorSelector newFrag = new ColorSelector();
+
+        Bundle args = new Bundle();
+        args.putInt(ARG_COLOR, startColor);
+        newFrag.setArguments(args);
+
+        return newFrag;
+    }
+
+	View view;
+	SaturationValueView viewSatVal;
+	HueView viewHue;
+	ImageView viewHueCursor;
+	ImageView viewSatValCursor;
+	ImageView viewOldColor;
+	ImageView viewNewColor;
 
 	float hueX = -1;
 	float hueY = -1;
 	float satValX = -1;
 	float satValY = -1;
-	
-	float hsv[] = {0, 0, 0};
-	int rgb = 0xFF000000;
-	
-	public boolean debug = false;
-	
-	void writeDebug() {
-		String text = "";
-		text += String.format("Hue: (%.0f, %.0f) : %.0f\n", hueX, hueY, hsv[0]);
-		text += String.format("SatVal: (%.0f, %.0f)\n", satValX, satValY);
-		viewDebug.setText(text);
-	}
-	
+
+    private int startRgb = 0xFF000000;
+    int rgb = 0xFF000000;
+    float hsv[] = {0, 0, 0};
+
 	void setHueCursor() {
 		RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) viewHueCursor.getLayoutParams();
 		layoutParams.leftMargin = -2 ;
@@ -72,18 +75,11 @@ public class ColorSelectDialog extends Dialog {
 		viewSatValCursor.setLayoutParams(layoutParams);
 	}
 	
-	/*
-	 * The correct way to manage a dialog is using Activity's onCreateDialog() and onPrepareDialog()
-	 * If you are doing so, then call setStartColor(yourDesiredStartColor) in onPrepareDialog()!
-	 */
-	public void setStartColor(int color) {
-		
-		Log.w("ColorSelectDialog", "setStartColor()");
-		rgb = color;
-		Color.colorToHSV(color, hsv);		
+	public void initColors() {
+		Color.colorToHSV(rgb, hsv);
 
-		viewOldColor.setBackgroundColor(0XFF000000 | color);
-		viewNewColor.setBackgroundColor(0XFF000000 | color);
+		viewOldColor.setBackgroundColor(0XFF000000 | startRgb);
+		viewNewColor.setBackgroundColor(0XFF000000 | rgb);
 		
 		ViewTreeObserver vto = view.getViewTreeObserver(); 
 		vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
@@ -91,43 +87,37 @@ public class ColorSelectDialog extends Dialog {
 				hueY = hsv[0] * viewHue.getMeasuredHeight() / 360.f;
 				satValX = hsv[1] * viewSatVal.getMeasuredWidth();
 				satValY = (1 - hsv[2]) * viewSatVal.getMeasuredHeight();
-				Log.d("cucu", String.format("hueY: %f; (satValX, satValY): (%f, %f)", hueY, satValX, satValX));
 				viewSatVal.setHue(hsv[0]);
 				setHueCursor();
 				setSatValCursor();
-				Log.w("dim", String.format("getMeasured HxV: hue: (%d, %d) cursor: (%d, %d)", viewHue.getMeasuredWidth(), viewHue.getMeasuredHeight(), viewHueCursor.getMeasuredWidth(), viewHueCursor.getMeasuredHeight()));
-				Log.w("dim", String.format("get HxV: hue: (%d, %d) cursor: (%d, %d)", viewHue.getWidth(), viewHue.getHeight(), viewHueCursor.getWidth(), viewHueCursor.getHeight()));
 				view.getViewTreeObserver().removeGlobalOnLayoutListener(this);
-				Log.w("ColorSelectDialog", "OnGlobalLayoutListener()");
 			}
 		});
 
 	}
-	
-	public ColorSelectDialog(Context context, int color, OnColorSelectListener onColorSelectListener) {
-		super(context);
-		
-		Log.w("ColorSelectDialog", "ColorSelectDialog() constructor!");
 
-		this.onColorSelectListener = onColorSelectListener;
-		
-		requestWindowFeature(Window.FEATURE_NO_TITLE);
-		Display display = ((WindowManager)context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
-		int displayWidth = display.getWidth();
-		int displayHeight = display.getHeight();
-		Log.w("dialog", "Display WxH: " + displayWidth + "x" + displayHeight);
-		setContentView(R.layout.color_select);
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
-		view = findViewById(R.id.All);
-		viewSatVal = (SaturationValueView)findViewById(R.id.SatVal);
-		viewHue = (HueView)findViewById(R.id.Hue);
-		viewDebug = (TextView)findViewById(R.id.Debug);
-		viewHueCursor = (ImageView)findViewById(R.id.HueCursor);
-		viewSatValCursor = (ImageView)findViewById(R.id.SatValCursor);
-		viewOldColor = (ImageView)findViewById(R.id.OldColor);
-		viewNewColor = (ImageView)findViewById(R.id.NewColor);
+        View v = inflater.inflate(R.layout.color_select, container, false);
 
-		setStartColor(color);
+		getDialog().getWindow().requestFeature(Window.FEATURE_NO_TITLE);
+
+		view = v.findViewById(R.id.All);
+		viewSatVal = (SaturationValueView)v.findViewById(R.id.SatVal);
+		viewHue = (HueView)v.findViewById(R.id.Hue);
+		viewHueCursor = (ImageView)v.findViewById(R.id.HueCursor);
+		viewSatValCursor = (ImageView)v.findViewById(R.id.SatValCursor);
+		viewOldColor = (ImageView)v.findViewById(R.id.OldColor);
+		viewNewColor = (ImageView)v.findViewById(R.id.NewColor);
+
+        startRgb = getArguments().getInt(ARG_COLOR, 0xFF000000);
+        rgb = startRgb;
+        if (savedInstanceState != null) {
+            rgb = savedInstanceState.getInt(ARG_COLOR, startRgb);
+        }
+        initColors();
 
 		viewHue.setOnTouchListener(new View.OnTouchListener() {
 			
@@ -154,9 +144,6 @@ public class ColorSelectDialog extends Dialog {
 					rgb = Color.HSVToColor(hsv);
 					viewNewColor.setBackgroundColor(rgb);
 					
-					if (debug) {
-						writeDebug();
-					}
 					return true;
 				}
 				return false;
@@ -195,9 +182,6 @@ public class ColorSelectDialog extends Dialog {
 					rgb = Color.HSVToColor(hsv);
 					viewNewColor.setBackgroundColor(rgb);
 					
-					if (debug) {
-						writeDebug();
-					}
 					return true;
 				}
 				return false;
@@ -215,11 +199,20 @@ public class ColorSelectDialog extends Dialog {
 		viewNewColor.setOnTouchListener(new View.OnTouchListener() {
 			public boolean onTouch(View v, MotionEvent event) {
 				viewNewColor.setBackgroundColor(0xFFFFFFFF);
-				ColorSelectDialog.this.onColorSelectListener.onNewColor(rgb);
+                ((ColorSelectedListener)getActivity()).onNewColor(rgb);
 				dismiss();
 				return false;
 			}
 		});
 
+        return v;
+
 	}
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putInt(ARG_COLOR, rgb);
+
+        super.onSaveInstanceState(outState);
+    }
 }
